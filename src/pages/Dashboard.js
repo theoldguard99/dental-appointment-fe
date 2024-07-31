@@ -1,8 +1,10 @@
 import React from 'react';
-import Dashboard from '../components/Dashboard/Dashboard';
+import DashboardPage from '../components/Dashboard/Dashboard';
 
-const UserDashboard = () => {
-  return <Dashboard />;
+const Dashboard = () => {
+  return (
+    <DashboardPage />
+  );
 };
 
-export default UserDashboard;
+export default Dashboard;

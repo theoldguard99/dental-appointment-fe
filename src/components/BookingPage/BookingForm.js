@@ -1,0 +1,218 @@
+import React, { useState, useContext } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { AuthContext } from '../../context/AuthContext';
+
+const dentists = [
+  'Dr. Maria Santos',
+  'Dr. Jose Garcia',
+  'Dr. Ana Reyes',
+  'Dr. Carlos Dela Cruz',
+  'Dr. Luz Martinez'
+];
+
+const BookingForm = ({ onClose }) => {
+  const { user } = useContext(AuthContext);
+  const [appointmentData, setAppointmentData] = useState({
+    service: '',
+    dentist: '',
+    date: new Date(),
+    time: new Date(),
+    childName: '',
+  });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setAppointmentData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleDateChange = (date) => {
+    setAppointmentData((prevData) => ({ ...prevData, date }));
+  };
+
+  const handleTimeChange = (time) => {
+    setAppointmentData((prevData) => ({ ...prevData, time }));
+  };
+
+  const handleServiceChange = (e) => {
+    setAppointmentData((prevData) => ({ ...prevData, service: e.target.value }));
+  };
+
+  const handleDentistChange = (e) => {
+    setAppointmentData((prevData) => ({ ...prevData, dentist: e.target.value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirm = async () => {
+    setShowConfirmModal(false);
+
+    const appointment = {
+      service: appointmentData.service,
+      dentist: appointmentData.dentist,
+      date: appointmentData.date,
+      time: appointmentData.time,
+      childName: appointmentData.service === 'Pediatric Dentistry' ? appointmentData.childName : undefined,
+    };
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/appointments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(appointment),
+      });
+
+      if (response.ok) {
+        alert('Appointment created successfully');
+      } else {
+        const data = await response.json();
+        alert(`Failed to create appointment: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Error creating appointment:', error);
+      alert('Error creating appointment');
+    }
+
+    onClose();
+  };
+
+  const handleCancel = () => {
+    setShowConfirmModal(false);
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg w-full">
+      <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-lg font-medium mb-2" htmlFor="service">Service</label>
+          <select
+            id="service"
+            name="service"
+            className="w-full border border-gray-300 rounded-md p-2"
+            value={appointmentData.service}
+            onChange={handleServiceChange}
+            required
+          >
+            <option value="">Select a Service</option>
+            <option value="Pediatric Dentistry">Pediatric Dentistry</option>
+            <option value="Diagnostic Services">Diagnostic Services</option>
+            <option value="Restorative Dentistry">Restorative Dentistry</option>
+            <option value="Cosmetic Dentistry">Cosmetic Dentistry</option>
+            <option value="Periodontal Care">Periodontal Care</option>
+            <option value="Oral Surgery">Oral Surgery</option>
+            <option value="Orthodontics">Orthodontics</option>
+            <option value="Sedation Dentistry">Sedation Dentistry</option>
+            <option value="Emergency Dental Care">Emergency Dental Care</option>
+            <option value="Specialized Treatments">Specialized Treatments</option>
+            <option value="Holistic Dentistry">Holistic Dentistry</option>
+          </select>
+        </div>
+        {appointmentData.service === 'Pediatric Dentistry' && (
+          <div className="mb-4">
+            <label className="block text-lg font-medium mb-2" htmlFor="childName">Child's Name</label>
+            <input
+              type="text"
+              id="childName"
+              name="childName"
+              className="w-full border border-gray-300 rounded-md p-2"
+              value={appointmentData.childName}
+              onChange={handleFormChange}
+              required
+            />
+          </div>
+        )}
+        <div className="mb-4">
+          <label className="block text-lg font-medium mb-2" htmlFor="dentist">Dentist</label>
+          <select
+            id="dentist"
+            name="dentist"
+            className="w-full border border-gray-300 rounded-md p-2"
+            value={appointmentData.dentist}
+            onChange={handleDentistChange}
+            required
+          >
+            <option value="">Select a Dentist</option>
+            {dentists.map(dentist => (
+              <option key={dentist} value={dentist}>{dentist}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-lg font-medium mb-2" htmlFor="date">Desired Date</label>
+          <div className="w-full">
+            <DatePicker
+              id="date"
+              selected={appointmentData.date}
+              onChange={handleDateChange}
+              className="w-full border border-gray-300 rounded-md p-2"
+              required
+            />
+          </div>
+        </div>
+        <div className="mb-4">
+          <label className="block text-lg font-medium mb-2" htmlFor="time">Desired Time</label>
+          <div className="w-full">
+            <DatePicker
+              id="time"
+              selected={appointmentData.time}
+              onChange={handleTimeChange}
+              showTimeSelect
+              showTimeSelectOnly
+              timeIntervals={1}
+              timeCaption="Time"
+              dateFormat="h:mm aa"
+              className="w-full border border-gray-300 rounded-md p-2"
+              required
+              filterTime={(time) => {
+                const hours = time.getHours();
+                return hours >= 9 && hours < 18;
+              }}
+            />
+          </div>
+        </div>
+        <div className="flex justify-between">
+          <button type="button" onClick={onClose} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition-colors duration-300">
+            Cancel
+          </button>
+          <button type="submit" className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300">
+            Submit
+          </button>
+        </div>
+      </form>
+      {showConfirmModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-2xl font-bold mb-4">Confirm Appointment</h2>
+            <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
+            {appointmentData.service === 'Pediatric Dentistry' && (
+              <p><strong>Child's Name:</strong> {appointmentData.childName}</p>
+            )}
+            <p><strong>Service:</strong> {appointmentData.service}</p>
+            <p><strong>Dentist:</strong> {appointmentData.dentist}</p>
+            <p><strong>Address:</strong> {user?.address}</p>
+            <p><strong>Date:</strong> {appointmentData.date.toLocaleDateString()}</p>
+            <p><strong>Time:</strong> {appointmentData.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+            <div className="flex justify-between mt-4">
+              <button onClick={handleCancel} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition-colors duration-300">
+                Cancel
+              </button>
+              <button onClick={handleConfirm} className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300">
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BookingForm;

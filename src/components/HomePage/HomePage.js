@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CarouselBackground from './CarouselBackground';
 import ScrollToTop from './ScrollToTop';
 import OurClinic from '../Sections/OurClinic';
 import OurServices from '../Sections/OurServices';
 import AboutUs from '../Sections/AboutUs';
 import AnimatedComponent from '../AnimatedComponent/AnimatedComponent';
+import LoginModal from '../LoginModal/LoginModal';
 
 import clinicImage from '../../assets/images/clinicImage.jpg';
 import servicesImage from '../../assets/images/servicesImage.jpg';
@@ -17,19 +18,33 @@ const scrollToSection = (id) => {
 };
 
 const HomePage = () => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   const homepageSections = ['clinic', 'services', 'about'];
+
+  const handleLoginModalOpen = () => setShowLoginModal(true);
+  const handleLoginModalClose = () => setShowLoginModal(false);
 
   return (
     <div className="w-full h-full overflow-y-auto">
       <ScrollToTop />
-      <AnimatedComponent sections={homepageSections} />
+      {!showLoginModal && (
+        <div onClick={handleLoginModalOpen} className="cursor-pointer">
+          <AnimatedComponent sections={homepageSections} />
+        </div>
+      )}
       <section className="relative w-full h-screen snap-start">
         <CarouselBackground />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10">
           <div className="text-center mb-20">
             <h1 className="text-3xl font-bold">Welcome to Our Dental Office</h1>
             <p className="mt-4">We offer a variety of dental services to keep your smile healthy and bright.</p>
-            <button className="bg-blue-500 text-white p-2 rounded mt-4">Schedule an Appointment</button>
+            <button
+              onClick={handleLoginModalOpen}
+              className="bg-blue-500 text-white p-2 rounded mt-4"
+            >
+              Schedule an Appointment
+            </button>
           </div>
           <div className="flex space-x-10 mb-10">
             <div onClick={() => scrollToSection('clinic')} className="flex flex-col items-center cursor-pointer">
@@ -71,6 +86,7 @@ const HomePage = () => {
       <section id="about" className="relative w-full h-screen snap-start">
         <AboutUs />
       </section>
+      <LoginModal show={showLoginModal} handleClose={handleLoginModalClose} />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { AuthContext } from '../../context/AuthContext';
+import Dialog from '../Dialog/Dialog';
 
 const dentists = [
   'Dr. Maria Santos',
@@ -21,6 +22,7 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
     childName: appointment.childName || '',
   });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [dialog, setDialog] = useState({ show: false, title: '', message: '', type: '' });
 
   useEffect(() => {
     if (appointment.service === 'Pediatric Dentistry') {
@@ -76,21 +78,39 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
       });
 
       if (response.ok) {
-        alert('Appointment updated successfully');
+        setDialog({
+          show: true,
+          title: 'Success',
+          message: 'Appointment updated successfully',
+          type: 'success'
+        });
+        onClose();
       } else {
         const data = await response.json();
-        alert(`Failed to update appointment: ${data.message}`);
+        setDialog({
+          show: true,
+          title: 'Error',
+          message: `Failed to update appointment: ${data.message}`,
+          type: 'error'
+        });
       }
     } catch (error) {
       console.error('Error updating appointment:', error);
-      alert('Error updating appointment');
+      setDialog({
+        show: true,
+        title: 'Error',
+        message: `Error updating appointment: ${error.message}`,
+        type: 'error'
+      });
     }
-
-    onClose();
   };
 
   const handleCancel = () => {
     setShowConfirmModal(false);
+  };
+
+  const closeDialog = () => {
+    setDialog({ show: false, title: '', message: '', type: '' });
   };
 
   return (
@@ -217,6 +237,13 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
           </div>
         </div>
       )}
+      <Dialog
+        show={dialog.show}
+        title={dialog.title}
+        message={dialog.message}
+        type={dialog.type}
+        onClose={closeDialog}
+      />
     </div>
   );
 };

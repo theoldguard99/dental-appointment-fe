@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { AuthContext } from '../../context/AuthContext';
+import Dialog from '../Dialog/Dialog';
 
 const dentists = [
   'Dr. Maria Santos',
@@ -21,6 +22,7 @@ const BookingForm = ({ onClose }) => {
     childName: '',
   });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [dialog, setDialog] = useState({ show: false, title: '', message: '', type: '' });
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -70,25 +72,43 @@ const BookingForm = ({ onClose }) => {
       });
 
       if (response.ok) {
-        alert('Appointment created successfully');
+        setDialog({
+          show: true,
+          title: 'Success',
+          message: 'Appointment created successfully',
+          type: 'success'
+        });
+        onClose();
       } else {
         const data = await response.json();
-        alert(`Failed to create appointment: ${data.message}`);
+        setDialog({
+          show: true,
+          title: 'Error',
+          message: `Failed to create appointment: ${data.message}`,
+          type: 'error'
+        });
       }
     } catch (error) {
       console.error('Error creating appointment:', error);
-      alert('Error creating appointment');
+      setDialog({
+        show: true,
+        title: 'Error',
+        message: `Error creating appointment: ${error.message}`,
+        type: 'error'
+      });
     }
-
-    onClose();
   };
 
   const handleCancel = () => {
     setShowConfirmModal(false);
   };
 
+  const closeDialog = () => {
+    setDialog({ show: false, title: '', message: '', type: '' });
+  };
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg w-full">
+    <div className="bg-white p-5 rounded-lg shadow-lg w-full">
       <h2 className="text-2xl font-bold mb-4">Book an Appointment</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -211,6 +231,13 @@ const BookingForm = ({ onClose }) => {
           </div>
         </div>
       )}
+      <Dialog
+        show={dialog.show}
+        title={dialog.title}
+        message={dialog.message}
+        type={dialog.type}
+        onClose={closeDialog}
+      />
     </div>
   );
 };

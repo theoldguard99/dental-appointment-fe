@@ -1,16 +1,10 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { AuthContext } from '../../context/AuthContext';
+import React, { useEffect, useState } from 'react';
 import { FaTrashAlt, FaEdit } from 'react-icons/fa';
 import BookingUpdateForm from '../BookingPage/BookingUpdateForm';
-import Dialog from '../Dialog/Dialog';
 
-const Appointments = () => {
-  const { user } = useContext(AuthContext);
+const Appointments = ({ onAppointmentsUpdate, onModalOpen }) => {
   const [appointments, setAppointments] = useState([]);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [showUpdateForm, setShowUpdateForm] = useState(false);
-  const [dialog, setDialog] = useState({ show: false, title: '', message: '', type: '' });
+  const [, setSelectedAppointment] = useState(null);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -24,7 +18,7 @@ const Appointments = () => {
         setAppointments(data);
       } catch (error) {
         console.error('Error fetching appointments:', error);
-        setDialog({
+        onAppointmentsUpdate({
           show: true,
           title: 'Error',
           message: 'Failed to fetch appointments.',
@@ -38,30 +32,51 @@ const Appointments = () => {
 
   const handleDeleteClick = (appointment) => {
     setSelectedAppointment(appointment);
-    setShowConfirmModal(true);
+    onModalOpen(
+      <div className="modal-content">
+        <h2 className="text-2xl font-bold mb-4">Confirm Delete</h2>
+        <p>Are you sure you want to cancel this appointment?</p>
+        <div className="flex justify-between mt-4">
+          <button onClick={() => onModalOpen(null)} className="bg-gray-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-600 transition-colors duration-300">
+            No
+          </button>
+          <button onClick={() => handleConfirmDelete(appointment)} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition-colors duration-300">
+            Yes
+          </button>
+        </div>
+      </div>
+    );
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (appointment) => {
+    if (!appointment) {
+      return; 
+    }
+
+    console.log('Deleting appointment:', appointment._id);
+
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/appointments/${selectedAppointment._id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/appointments/${appointment._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      const data = await response.json();
+
       if (response.ok) {
-        setAppointments(appointments.filter(appointment => appointment._id !== selectedAppointment._id));
-        setShowConfirmModal(false);
-        setDialog({
+        setAppointments((prevAppointments) =>
+          prevAppointments.filter(appt => appt._id !== appointment._id)
+        );
+        onAppointmentsUpdate({
           show: true,
           title: 'Success',
           message: 'Appointment deleted successfully.',
           type: 'success'
         });
       } else {
+        const data = await response.json();
         console.error(`Failed to delete appointment: ${data.message}`);
-        setDialog({
+        onAppointmentsUpdate({
           show: true,
           title: 'Error',
           message: `Failed to delete appointment: ${data.message}`,
@@ -70,39 +85,48 @@ const Appointments = () => {
       }
     } catch (error) {
       console.error('Error deleting appointment:', error);
-      setDialog({
+      onAppointmentsUpdate({
         show: true,
         title: 'Error',
         message: `Error deleting appointment: ${error.message}`,
         type: 'error'
       });
     }
-  };
-
-  const handleCancelDelete = () => {
-    setShowConfirmModal(false);
+    onModalOpen(null);
     setSelectedAppointment(null);
   };
 
   const handleEditClick = (appointment) => {
     setSelectedAppointment(appointment);
-    setShowUpdateForm(true);
-  };
-
-  const closeDialog = () => {
-    setDialog({ show: false, title: '', message: '', type: '' });
+    onModalOpen(
+      <BookingUpdateForm
+        appointment={appointment}
+        onClose={() => onModalOpen(null)}
+        onUpdate={(updatedAppointment) => {
+          setAppointments((prevAppointments) =>
+            prevAppointments.map(appt => appt._id === updatedAppointment._id ? updatedAppointment : appt)
+          );
+          onAppointmentsUpdate({
+            show: true,
+            title: 'Success',
+            message: 'Appointment updated successfully.',
+            type: 'success'
+          });
+        }}
+      />
+    );
   };
 
   return (
     <div className="w-full h-full">
-      <div className="h-96 overflow-y-auto bg-gray-100 rounded-lg p-4 shadow-lg">
+      <div className="h-full overflow-y-auto bg-gray-100 rounded-lg p-4 shadow-lg">
         {appointments.length === 0 ? (
           <div className="flex items-center justify-center bg-white p-6 mb-4 rounded-lg shadow-lg">
             <p className="text-gray-600">No upcoming appointments.</p>
           </div>
         ) : (
           appointments.map(appointment => (
-            <div key={appointment._id} className="flex items-center justify-between bg-white p-6 mb-4 rounded-lg shadow-lg w-full">
+            <div key={appointment._id} className="flex items-center justify-between bg-white p-6 mb-4 rounded-lg shadow-lg w-full" >
               <div>
                 <h3 className="text-2xl font-bold text-blue-600">{appointment.service}</h3>
                 <p className="text-gray-700">Dentist: {appointment.dentist}</p>
@@ -120,39 +144,6 @@ const Appointments = () => {
           ))
         )}
       </div>
-
-      {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-4">Confirm Delete</h2>
-            <p>Are you sure you want to cancel this appointment?</p>
-            <div className="flex justify-between mt-4">
-              <button onClick={handleCancelDelete} className="bg-gray-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-600 transition-colors duration-300">
-                No
-              </button>
-              <button onClick={handleConfirmDelete} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition-colors duration-300">
-                Yes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showUpdateForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-            <BookingUpdateForm appointment={selectedAppointment} onClose={() => setShowUpdateForm(false)} />
-          </div>
-        </div>
-      )}
-
-      <Dialog
-        show={dialog.show}
-        title={dialog.title}
-        message={dialog.message}
-        type={dialog.type}
-        onClose={closeDialog}
-      />
     </div>
   );
 };

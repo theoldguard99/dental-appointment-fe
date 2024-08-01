@@ -10,7 +10,7 @@ import AuthProvider from './context/AuthContext';
 
 const App = () => {
   const location = useLocation();
-  const hideHeaderAndFooter = location.pathname === '/register';
+  const hideHeaderAndFooter = location.pathname === '/register' || location.pathname === '/dashboard';
 
   return (
     <AuthProvider>

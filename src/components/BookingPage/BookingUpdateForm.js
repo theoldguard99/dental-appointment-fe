@@ -12,7 +12,7 @@ const dentists = [
   'Dr. Luz Martinez'
 ];
 
-const BookingUpdateForm = ({ appointment, onClose }) => {
+const BookingUpdateForm = ({ appointment, onClose, onUpdate }) => {
   const { user } = useContext(AuthContext);
   const [appointmentData, setAppointmentData] = useState({
     service: appointment.service,
@@ -21,7 +21,6 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
     time: new Date(appointment.time),
     childName: appointment.childName || '',
   });
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [dialog, setDialog] = useState({ show: false, title: '', message: '', type: '' });
 
   useEffect(() => {
@@ -51,13 +50,8 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
     setAppointmentData((prevData) => ({ ...prevData, dentist: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowConfirmModal(true);
-  };
-
-  const handleConfirm = async () => {
-    setShowConfirmModal(false);
 
     const updatedAppointment = {
       service: appointmentData.service,
@@ -78,20 +72,23 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
       });
 
       if (response.ok) {
+        const updatedAppt = await response.json();
         setDialog({
           show: true,
           title: 'Success',
           message: 'Appointment updated successfully',
-          type: 'success'
+          type: 'success',
+          onCloseAdditional: onClose
         });
-        onClose();
+        onUpdate(updatedAppt);
       } else {
         const data = await response.json();
         setDialog({
           show: true,
           title: 'Error',
-          message: `Failed to update appointment: ${data.message}`,
-          type: 'error'
+          message: `${data.message}`,
+          type: 'error',
+          onCloseAdditional: onClose
         });
       }
     } catch (error) {
@@ -100,13 +97,10 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
         show: true,
         title: 'Error',
         message: `Error updating appointment: ${error.message}`,
-        type: 'error'
+        type: 'error',
+        onCloseAdditional: onClose 
       });
     }
-  };
-
-  const handleCancel = () => {
-    setShowConfirmModal(false);
   };
 
   const closeDialog = () => {
@@ -114,7 +108,7 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg w-full">
+    <div>
       <h2 className="text-2xl font-bold mb-4">Update Appointment</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -213,36 +207,13 @@ const BookingUpdateForm = ({ appointment, onClose }) => {
           </button>
         </div>
       </form>
-      {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-4">Confirm Appointment</h2>
-            <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
-            {appointmentData.service === 'Pediatric Dentistry' && (
-              <p><strong>Child's Name:</strong> {appointmentData.childName}</p>
-            )}
-            <p><strong>Service:</strong> {appointmentData.service}</p>
-            <p><strong>Dentist:</strong> {appointmentData.dentist}</p>
-            <p><strong>Address:</strong> {user?.address}</p>
-            <p><strong>Date:</strong> {appointmentData.date.toLocaleDateString()}</p>
-            <p><strong>Time:</strong> {appointmentData.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-            <div className="flex justify-between mt-4">
-              <button onClick={handleCancel} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition-colors duration-300">
-                Cancel
-              </button>
-              <button onClick={handleConfirm} className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300">
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <Dialog
         show={dialog.show}
         title={dialog.title}
         message={dialog.message}
         type={dialog.type}
         onClose={closeDialog}
+        onCloseAdditional={onClose}
       />
     </div>
   );

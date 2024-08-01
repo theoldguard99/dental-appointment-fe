@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Lottie from 'lottie-react';
 import animationData from '../../assets/animations/animation-asset-1.json';
 
 const AnimatedComponent = ({ sections = [] }) => {
   const [isVisible, setIsVisible] = useState(false);
 
-  const toggleVisibility = () => {
+  const toggleVisibility = useCallback(() => {
     const scrollPosition = window.scrollY + window.innerHeight / 2;
     let shouldShow = false;
 
@@ -23,7 +23,7 @@ const AnimatedComponent = ({ sections = [] }) => {
     });
 
     setIsVisible(shouldShow);
-  };
+  }, [sections]);
 
   useEffect(() => {
     window.addEventListener('scroll', toggleVisibility);
@@ -31,7 +31,7 @@ const AnimatedComponent = ({ sections = [] }) => {
     return () => {
       window.removeEventListener('scroll', toggleVisibility);
     };
-  }, [sections]);
+  }, [toggleVisibility]);
 
   return (
     <div className={`fixed bottom-5 left-5 z-50 transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>

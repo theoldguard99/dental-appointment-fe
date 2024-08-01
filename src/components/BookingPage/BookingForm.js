@@ -2,7 +2,6 @@ import React, { useState, useContext } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { AuthContext } from '../../context/AuthContext';
-import Dialog from '../Dialog/Dialog';
 
 const dentists = [
   'Dr. Maria Santos',
@@ -12,7 +11,7 @@ const dentists = [
   'Dr. Luz Martinez'
 ];
 
-const BookingForm = ({ onClose }) => {
+const BookingForm = ({ onClose, onModalOpen, setDialog }) => {
   const { user } = useContext(AuthContext);
   const [appointmentData, setAppointmentData] = useState({
     service: '',
@@ -21,8 +20,6 @@ const BookingForm = ({ onClose }) => {
     time: new Date(),
     childName: '',
   });
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [dialog, setDialog] = useState({ show: false, title: '', message: '', type: '' });
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -47,12 +44,31 @@ const BookingForm = ({ onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setShowConfirmModal(true);
+    onModalOpen(
+      <div className="modal-content">
+        <h2 className="text-2xl font-bold mb-4 text-center">Confirm Appointment</h2>
+        <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
+        {appointmentData.service === 'Pediatric Dentistry' && (
+          <p><strong>Child's Name:</strong> {appointmentData.childName}</p>
+        )}
+        <p><strong>Service:</strong> {appointmentData.service}</p>
+        <p><strong>Dentist:</strong> {appointmentData.dentist}</p>
+        <p><strong>Address:</strong> {user?.address}</p>
+        <p><strong>Date:</strong> {appointmentData.date.toLocaleDateString()}</p>
+        <p><strong>Time:</strong> {appointmentData.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+        <div className="flex justify-between mt-4">
+          <button onClick={() => onModalOpen(null)} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition-colors duration-300">
+            Cancel
+          </button>
+          <button onClick={handleConfirm} className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300">
+            Confirm
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const handleConfirm = async () => {
-    setShowConfirmModal(false);
-
     const appointment = {
       service: appointmentData.service,
       dentist: appointmentData.dentist,
@@ -72,39 +88,34 @@ const BookingForm = ({ onClose }) => {
       });
 
       if (response.ok) {
+        onModalOpen(null);
+        onClose();
         setDialog({
           show: true,
           title: 'Success',
           message: 'Appointment created successfully',
-          type: 'success'
+          type: 'success',
+          onCloseAdditional: onClose 
         });
-        onClose();
       } else {
         const data = await response.json();
         setDialog({
           show: true,
           title: 'Error',
-          message: `Failed to create appointment: ${data.message}`,
-          type: 'error'
+          message: `${data.message}`,
+          type: 'error',
+          onCloseAdditional: onClose
         });
       }
     } catch (error) {
-      console.error('Error creating appointment:', error);
       setDialog({
         show: true,
         title: 'Error',
-        message: `Error creating appointment: ${error.message}`,
-        type: 'error'
+        message: `${error.message}`,
+        type: 'error',
+        onCloseAdditional: onClose 
       });
     }
-  };
-
-  const handleCancel = () => {
-    setShowConfirmModal(false);
-  };
-
-  const closeDialog = () => {
-    setDialog({ show: false, title: '', message: '', type: '' });
   };
 
   return (
@@ -207,37 +218,6 @@ const BookingForm = ({ onClose }) => {
           </button>
         </div>
       </form>
-      {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-4">Confirm Appointment</h2>
-            <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
-            {appointmentData.service === 'Pediatric Dentistry' && (
-              <p><strong>Child's Name:</strong> {appointmentData.childName}</p>
-            )}
-            <p><strong>Service:</strong> {appointmentData.service}</p>
-            <p><strong>Dentist:</strong> {appointmentData.dentist}</p>
-            <p><strong>Address:</strong> {user?.address}</p>
-            <p><strong>Date:</strong> {appointmentData.date.toLocaleDateString()}</p>
-            <p><strong>Time:</strong> {appointmentData.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-            <div className="flex justify-between mt-4">
-              <button onClick={handleCancel} className="bg-red-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-red-600 transition-colors duration-300">
-                Cancel
-              </button>
-              <button onClick={handleConfirm} className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300">
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      <Dialog
-        show={dialog.show}
-        title={dialog.title}
-        message={dialog.message}
-        type={dialog.type}
-        onClose={closeDialog}
-      />
     </div>
   );
 };

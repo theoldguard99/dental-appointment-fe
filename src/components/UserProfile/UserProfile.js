@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import Dialog from '../Dialog/Dialog';
 
 const UserProfile = ({ onProfileUpdate }) => {
   const { user, login } = useContext(AuthContext);
@@ -9,85 +8,57 @@ const UserProfile = ({ onProfileUpdate }) => {
     lastName: '',
     address: '',
     birthdate: '',
-    medicalHistory: null,
+    contactNumber: '',
   });
-  const [dialog, setDialog] = useState({ show: false, title: '', message: '', type: '' });
 
   useEffect(() => {
     if (user) {
       setProfileData({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        address: user.address,
-        birthdate: new Date(user.birthdate).toISOString().split('T')[0],
-        medicalHistory: user.medicalHistory,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        address: user.address || '',
+        birthdate: user.birthdate ? new Date(user.birthdate).toISOString().split('T')[0] : '',
+        contactNumber: user.contactNumber || '',
       });
     }
   }, [user]);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'medicalHistory') {
-      setProfileData((prevData) => ({ ...prevData, medicalHistory: files[0] }));
-    } else {
-      setProfileData((prevData) => ({ ...prevData, [name]: value }));
-    }
+    const { name, value } = e.target;
+    setProfileData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append('firstName', profileData.firstName);
-    formData.append('lastName', profileData.lastName);
-    formData.append('address', profileData.address);
-    formData.append('birthdate', profileData.birthdate);
-    if (profileData.medicalHistory) {
-      formData.append('medicalHistory', profileData.medicalHistory);
-    }
+    const formData = {
+      firstName: profileData.firstName,
+      lastName: profileData.lastName,
+      address: profileData.address,
+      birthdate: profileData.birthdate,
+      contactNumber: profileData.contactNumber,
+    };
 
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: formData,
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
       if (response.ok) {
         login(data.token, data.user);
-        setDialog({
-          show: true,
-          title: 'Success',
-          message: 'Profile updated successfully',
-          type: 'success'
-        });
-        if (onProfileUpdate) {
-          onProfileUpdate();
-        }
+        onProfileUpdate();
       } else {
-        setDialog({
-          show: true,
-          title: 'Error',
-          message: `Failed to update profile: ${data.message}`,
-          type: 'error'
-        });
+        console.error(`Failed to update profile: ${data.message}`);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      setDialog({
-        show: true,
-        title: 'Error',
-        message: `Error updating profile: ${error.message}`,
-        type: 'error'
-      });
     }
-  };
-
-  const closeDialog = () => {
-    setDialog({ show: false, title: '', message: '', type: '' });
   };
 
   return (
@@ -119,6 +90,18 @@ const UserProfile = ({ onProfileUpdate }) => {
           />
         </div>
         <div className="mb-4">
+          <label className="block text-lg font-medium mb-2" htmlFor="contactNumber">Contact Number</label>
+          <input
+            type="text"
+            id="contactNumber"
+            name="contactNumber"
+            className="w-full border border-gray-300 rounded-md p-2"
+            value={profileData.contactNumber}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-4">
           <label className="block text-lg font-medium mb-2" htmlFor="address">Address</label>
           <input
             type="text"
@@ -142,35 +125,10 @@ const UserProfile = ({ onProfileUpdate }) => {
             required
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-lg font-medium mb-2" htmlFor="medicalHistory">Medical History (PDF)</label>
-          <input
-            type="file"
-            id="medicalHistory"
-            name="medicalHistory"
-            className="w-full border border-gray-300 rounded-md p-2"
-            accept=".pdf"
-            onChange={handleChange}
-          />
-          {profileData.medicalHistory && (
-            <div className="mt-2">
-              <a href={`${process.env.REACT_APP_API_BASE_URL}/${profileData.medicalHistory}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                View Medical History
-              </a>
-            </div>
-          )}
-        </div>
         <button type="submit" className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300">
           Save
         </button>
       </form>
-      <Dialog
-        show={dialog.show}
-        title={dialog.title}
-        message={dialog.message}
-        type={dialog.type}
-        onClose={closeDialog}
-      />
     </div>
   );
 };

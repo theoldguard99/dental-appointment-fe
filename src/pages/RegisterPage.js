@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Dialog from '../components/Dialog/Dialog';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,12 @@ const RegisterPage = () => {
     address: '',
     birthdate: '',
     contactNumber: '' 
+  });
+  const [dialog, setDialog] = useState({
+    show: false,
+    title: '',
+    message: '',
+    type: '',
   });
   const navigate = useNavigate();
 
@@ -29,17 +36,41 @@ const RegisterPage = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        navigate('/dashboard');
+        setDialog({
+          show: true,
+          title: 'Success',
+          message: 'Registration successful!',
+          type: 'success',
+        });
       } else {
+        setDialog({
+          show: true,
+          title: 'Error',
+          message: data.error || 'Registration failed.',
+          type: 'error',
+        });
         console.error(data.error);
       }
     } catch (error) {
+      setDialog({
+        show: true,
+        title: 'Error',
+        message: 'Error registering. Please try again.',
+        type: 'error',
+      });
       console.error('Error registering:', error);
     }
   };
 
+  const handleCloseDialog = () => {
+    setDialog({ show: false, title: '', message: '', type: '' });
+    if (dialog.type === 'success') {
+      navigate('/');
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Create Account</h2>
         <form onSubmit={handleSubmit}>
@@ -156,6 +187,13 @@ const RegisterPage = () => {
           </div>
         </form>
       </div>
+      <Dialog 
+        show={dialog.show} 
+        title={dialog.title} 
+        message={dialog.message} 
+        type={dialog.type} 
+        onClose={handleCloseDialog} 
+      />
     </div>
   );
 };

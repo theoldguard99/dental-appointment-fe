@@ -1,70 +1,273 @@
-# Getting Started with Create React App
+# Dental Appointment Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Welcome to the **Dental Appointment Management System**! This project is designed to help manage dental appointments efficiently, offering both a backend API and a frontend interface.
 
-## Available Scripts
+## Table of Contents
 
-In the project directory, you can run:
+- [Features](#features)
+- [Installation](#installation)
+- [Backend Setup](#backend-setup)
+- [Frontend Setup](#frontend-setup)
+- [Environment Variables](#environment-variables)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- 🦷 User registration and authentication
+- 📅 Appointment booking, updating, and cancellation
+- 👤 User profile management
+- 📱 Responsive frontend interface
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Installation
 
-### `npm test`
+To get started, clone this repository:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```sh
+git clone https://github.com/your-username/dental-appointment-system.git
+cd dental-appointment-system
+```
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Backend Setup
+Navigate to the backend directory:
+```sh
+cd dental-appointment-backend
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Install the dependencies:
+```sh
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Set up your environment variables (See [Environment Variables](#environment-variables) Section).
 
-### `npm run eject`
+Start Server
+```sh
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Frontend Setup
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Navigate to the frontend directory:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```sh
+cd dental-office-frontend
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Install the dependencies:
+```sh
+npm install
+```
 
-## Learn More
+Build the frontend (setup for AWS S3, Firebase & Beanstalk):
+```sh
+npm run build
+```
+Copy all the build files and upload it to GUI
+deploy the build to your preferred static site hosting service (e.g., AWS S3, Netlify).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Environment Variables
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Create a .env file in both the dental-appointment-backend and dental-office-frontend directories and add the following:
 
-### Code Splitting
+## Backend (.env)
+```sh
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Frontend (.env)
+```sh
+REACT_APP_API_BASE_URL=http://your-backend-url.com
+```
 
-### Analyzing the Bundle Size
+## Usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Backend
+* Ensure your MongoDB server is running.
+* Run the backend server:
 
-### Making a Progressive Web App
+## Frontend
+* Deploy the frontend build folder to your preferred static site hosting.
+* Access the frontend via the deployed URL.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## API Endpoints
+## authentication
+* **POST /api/auth/register** - Register a new user
 
-### Advanced Configuration
+**Example Request**
+```sh
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "password123",
+  "confirmPassword": "password123",
+  "address": "123 Main St",
+  "birthdate": "1990-01-01",
+  "contactNumber": "123-456-7890"
+}
+```
+**Example Response:**
+```sh
+{
+  "token": "your_jwt_token",
+  "user": {
+    "_id": "user_id",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "address": "123 Main St",
+    "birthdate": "1990-01-01",
+    "contactNumber": "123-456-7890",
+    "createdAt": "2023-01-01T00:00:00.000Z"
+  }
+}
+```
+* **POST /api/auth/login** - Login a user
+**Example Request**
+```sh
+{
+  "email": "john.doe@example.com",
+  "password": "password123"
+}
+```
+**Example Response:** 
+```sh
+{
+  "token": "your_jwt_token",
+  "user": {
+    "_id": "user_id",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "address": "123 Main St",
+    "birthdate": "1990-01-01",
+    "contactNumber": "123-456-7890",
+    "createdAt": "2023-01-01T00:00:00.000Z"
+  }
+}
+```
+## Appointments
+* **GET /api/appointments** - Get all appointments
+**Example Request:**
+```sh
+GET /api/appointments
+Authorization: Bearer your_jwt_token
+```
+**Example Response:**
+```sh
+[
+  {
+    "_id": "appointment_id",
+    "service": "Cleaning",
+    "dentist": "Dr. Smith",
+    "date": "2023-01-10T10:00:00.000Z",
+    "user": "user_id"
+  }
+]
+```
+* **POST /api/appointments** - Book a new appointment
+**Example Request**
+```sh
+{
+  "service": "Cleaning",
+  "dentist": "Dr. Smith",
+  "date": "2023-01-10T10:00:00.000Z"
+}
+```
+**Example Response**
+```sh
+{
+  "_id": "appointment_id",
+  "service": "Cleaning",
+  "dentist": "Dr. Smith",
+  "date": "2023-01-10T10:00:00.000Z",
+  "user": "user_id"
+}
+```
+* **PUT /api/appointments/:id** - Update an appointment
+```sh
+{
+  "service": "Whitening",
+  "date": "2023-01-15T14:00:00.000Z"
+}
+```
+**Example Response**
+```sh
+{
+  "_id": "appointment_id",
+  "service": "Whitening",
+  "dentist": "Dr. Smith",
+  "date": "2023-01-15T14:00:00.000Z",
+  "user": "user_id"
+}
+```
+* **DELETE /api/appointments/:id** - Cancel an appointment
+```sh
+DELETE /api/appointments/appointment_id
+Authorization: Bearer your_jwt_token
+```
+**Example Request**
+```sh
+DELETE /api/appointments/appointment_id
+Authorization: Bearer your_jwt_token
+```
+**Example Response**
+```sh
+{
+  "message": "Appointment cancelled successfully."
+}
+```
+## User
+* **GET /api/user/profile** - Get user profile
+**Example Request**
+```sh
+GET /api/user/profile
+Authorization: Bearer your_jwt_token
+```
+**Example Response**
+```sh
+{
+  "_id": "user_id",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "address": "123 Main St",
+  "birthdate": "1990-01-01",
+  "contactNumber": "123-456-7890",
+  "createdAt": "2023-01-01T00:00:00.000Z"
+}
+```
+* **PUT /api/user/profile** - Update user profile
+**Example Request**
+```sh
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "address": "456 Elm St",
+  "birthdate": "1990-01-01",
+  "contactNumber": "987-654-3210"
+}
+```
+**Example Response**
+```sh
+{
+  "_id": "user_id",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "address": "456 Elm St",
+  "birthdate": "1990-01-01",
+  "contactNumber": "987-654-3210",
+  "createdAt": "2023-01-01T00:00:00.000Z"
+}
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
-### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+This repo is for demo only and may be outdated, contact me at darrendfadrilan@gmail.com! 🦷✨
 
-### `npm run build` fails to minify
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

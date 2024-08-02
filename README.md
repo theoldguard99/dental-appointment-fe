@@ -265,8 +265,6 @@ Authorization: Bearer your_jwt_token
 }
 ```
 
-
-
 This repo is for demo only and may be outdated, contact me at darrendfadrilan@gmail.com! 🦷✨
 
 

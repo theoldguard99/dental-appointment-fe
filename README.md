@@ -25,7 +25,6 @@ To get started, clone this repository:
 
 ```sh
 https://github.com/theoldguard99/dental-appointment.git
-cd dental-appointment-system
 ```
 
 

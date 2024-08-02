@@ -24,7 +24,7 @@ Welcome to the **Dental Appointment Management System**! This project is designe
 To get started, clone this repository:
 
 ```sh
-git clone https://github.com/your-username/dental-appointment-system.git
+https://github.com/theoldguard99/dental-appointment.git
 cd dental-appointment-system
 ```
 

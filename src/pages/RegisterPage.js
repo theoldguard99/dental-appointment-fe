@@ -10,6 +10,7 @@ const RegisterPage = () => {
     confirmPassword: '',
     address: '',
     birthdate: '',
+    contactNumber: '' 
   });
   const navigate = useNavigate();
 
@@ -122,6 +123,18 @@ const RegisterPage = () => {
               name="birthdate"
               className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={formData.birthdate}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-lg font-medium mb-2" htmlFor="contactNumber">Contact Number</label>
+            <input
+              type="text"
+              id="contactNumber"
+              name="contactNumber"
+              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={formData.contactNumber}
               onChange={handleChange}
               required
             />
